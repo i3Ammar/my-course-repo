@@ -47,10 +47,55 @@
                     <div class="card mt-1">
                         <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
                         <div class="card-body">{{lesson.content}}</div>
+                           {% if course.lesson_set.all %}
+                               <h3>Videos:</h3>
+                               <ul>
+                                   {% for lesson in course.lesson_set.all %}
+                                       <li>
+                                           <h4>{{ lesson.title }}</h4>
+                                           {% if lesson.video %}
+                                               <video width="320" height="240" controls>
+                                                   <source src="{{ lesson.video.url }}" type="video/mp4">
+                                                   Your browser does not support the video tag.
+                                               </video>
+                                           {% else %}
+                                               No video uploaded yet.
+                                           {% endif %}
+                                       </li>
+                                   {% endfor %}
+                               </ul>
+                           {% endif %}
                     </div>
                 {% endfor %}
             </div>
             <!-- Course detail template changes go here -->
+{% if user.is_authenticated %}
+</br>
+<button class="btn btn-primary btn-block" data-toggle="collapse" data-target="#exam">Start Exam</button>
+<div id="exam" class="collapse">
+    <form id="questionform" action="{% url 'onlinecourse:submit' course.id %}" method="POST">
+        {% for question in course.question_set.all %}
+        <div class="card mt-1">
+            <div class="card-header">
+                <h5>{{ question.content }}</h5>
+            </div>
+            {% csrf_token %}
+            <div class="form-group">
+                {% for choice in question.choice_set.all %}
+                <div class="form-check">
+                    <label class="form-check-label">
+                        <input type="checkbox" name="choice_{{choice.id}}" class="form-check-input"
+                            id="{{choice.id}}" value="{{choice.id}}">{{ choice.content }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <input class="btn btn-success btn-block" type="submit" value="Submit">
+    </form>
+</div>
+{% endif %}
     </div>
 </body>
 </html>
